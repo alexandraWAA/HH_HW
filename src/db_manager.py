@@ -86,8 +86,8 @@ class DBManager:
                     CASE 
                         WHEN salary_from IS NOT NULL AND salary_to IS NOT NULL 
                         THEN (salary_from + salary_to) / 2.0
-                        WHEN salary_from IS NOT NULL THEN salary_from
-                        WHEN salary_to IS NOT NULL THEN salary_to
+                        WHEN salary_from IS NOT NULL THEN salary_from::float
+                        WHEN salary_to IS NOT NULL THEN salary_to::float
                         ELSE NULL
                     END
                 ) as avg_salary
@@ -95,7 +95,7 @@ class DBManager:
                 WHERE salary_from IS NOT NULL OR salary_to IS NOT NULL
             """)
             result = cur.fetchone()[0]
-            return round(result, 2) if result else 0
+            return round(result, 2) if result else 0.0
 
     def get_vacancies_with_higher_salary(self) -> List[Tuple[str, str, str, str, Optional[str]]]:
         """

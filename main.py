@@ -68,6 +68,26 @@ def parse_vacancies_data(api_data: Dict[int, Dict[str, Any]]) -> list:
 def main_menu():
     """Отображает главное меню и обрабатывает выбор пользователя."""
 
+    # Проверка подключения к PostgreSQL
+    import psycopg2
+    from config import Config
+
+    try:
+        test_conn = psycopg2.connect(**Config.get_db_connection_params())
+        test_conn.close()
+        print("✓ Подключение к PostgreSQL успешно")
+    except psycopg2.Error as e:
+        print(f"✗ Ошибка подключения к PostgreSQL: {e}")
+        print("Проверьте:")
+        print("  1. Запущен ли PostgreSQL (служба)")
+        print("  2. Пароль в файле .env")
+        print("  3. Имя базы данных (должна существовать или будет создана)")
+        return
+
+    print("\n" + "=" * 60)
+    print("ПАРСЕР ВАКАНСИЙ HH.RU")
+    print("=" * 60)
+
     print("\n" + "=" * 60)
     print("ПАРСЕР ВАКАНСИЙ HH.RU")
     print("=" * 60)
