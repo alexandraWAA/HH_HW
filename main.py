@@ -46,7 +46,6 @@ def parse_vacancies_data(api_data: Dict[int, Dict[str, Any]]) -> list:
         Список словарей с данными о вакансиях
     """
     vacancies = []
-
     for employer_id, data in api_data.items():
         for vacancy in data['vacancies']:
             salary = vacancy.get('salary', {})
