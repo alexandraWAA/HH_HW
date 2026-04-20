@@ -1,33 +1,34 @@
 """Модуль для создания базы данных и таблиц."""
 
 import psycopg2
-from psycopg2.extensions import connection
+from psycopg2.extensions import connection, ISOLATION_LEVEL_AUTOCOMMIT
 from typing import Optional
 from config import Config
 
 
 def create_database() -> None:
     """Создает базу данных, если она не существует."""
-    params = Config.get_db_connection_params()
-    db_name = params.pop('dbname')
+    params = Config.get_db_connection_params_without_db()
+    db_name = Config.DB_NAME
 
     # Подключаемся к базе postgres для создания новой БД
     conn = None
     try:
-        conn = psycopg2.connect(**params)
-        conn.autocommit = True
+        conn = psycopg2.connect(**params, database='postgres')
+        conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cursor = conn.cursor()
 
         # Проверяем существование базы данных
-        cursor.execute(f"SELECT 1 FROM pg_database WHERE datname = '{db_name}'")
+        cursor.execute("SELECT 1 FROM pg_database WHERE datname = %s", (db_name,))
         if not cursor.fetchone():
             cursor.execute(f"CREATE DATABASE {db_name}")
-            print(f"База данных {db_name} создана")
+            print(f"✅ База данных {db_name} создана")
         else:
-            print(f"База данных {db_name} уже существует")
+            print(f"ℹ️ База данных {db_name} уже существует")
 
     except psycopg2.Error as e:
-        print(f"Ошибка при создании базы данных: {e}")
+        print(f"❌ Ошибка при создании базы данных: {e}")
+        raise
     finally:
         if conn:
             conn.close()
@@ -80,7 +81,7 @@ def create_tables(conn: connection) -> None:
         """)
 
         conn.commit()
-        print("Таблицы успешно созданы")
+        print("✅ Таблицы успешно созданы")
 
 
 def save_employers(conn: connection, employers_data: list) -> None:
@@ -112,7 +113,7 @@ def save_employers(conn: connection, employers_data: list) -> None:
                 employer.get('area')
             ))
         conn.commit()
-        print(f"Сохранено {len(employers_data)} работодателей")
+        print(f"✅ Сохранено {len(employers_data)} работодателей")
 
 
 def save_vacancies(conn: connection, vacancies_data: list) -> None:
@@ -150,4 +151,4 @@ def save_vacancies(conn: connection, vacancies_data: list) -> None:
                 vacancy.get('responsibility')
             ))
         conn.commit()
-        print(f"Сохранено {len(vacancies_data)} вакансий")
+        print(f"✅ Сохранено {len(vacancies_data)} вакансий")
